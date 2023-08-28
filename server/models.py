@@ -6,10 +6,11 @@ from config import db, bcrypt
 # Models go here!
 
 
-class User(db.Model, SerializerMixin):
+class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
+
     username = db.Column(db.String)
     _password = db.Column("password", db.String)  # Renamed to _password
 
@@ -31,6 +32,12 @@ class User(db.Model, SerializerMixin):
         """Hash the provided password and store it."""
         self.set_password(password)
 
+    username = db.Column(db.String, unique=True)
+    _password = db.Column(db.String)
+
+    def __repr__(self):
+        return f"<Username:{self.username}, Password:{self._password}"
+
 
 class Game(db.Model):
     __tablename__ = "games"
@@ -38,6 +45,11 @@ class Game(db.Model):
     name = db.Column(db.String)
     genre = db.Column(db.String)
     picture = db.Column(db.String)
+    image = db.Column(db.String)
+
+    def __repr__(self):
+        return f"<Game Name:{self.name}, Genre:{self.genre}, Image:{self.image}"
+
 
 
 class Rating(db.Model):
@@ -48,9 +60,14 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     game_id = db.Column(db.Integer, db.ForeignKey("games.id"))
 
+    def __repr__(self):
+        return f"Rating:{self.rating}"
+
+
 
 class Favorite(db.Model):
     __tablename__ = "favorites"
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     game_id = db.Column(db.Integer, db.ForeignKey("games.id"))
