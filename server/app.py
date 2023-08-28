@@ -5,14 +5,24 @@
 # Remote library imports
 from flask import Flask, request, jsonify
 from flask_restful import Resource
-from config import app, db, bcrypt
+from flask_sqlalchemy import SQLAlchemy  
+from flask_bcrypt import Bcrypt          
+from flask_jwt_extended import create_access_token
+from flask_migrate import Migrate
+
+# Create the Flask app and set the configuration:
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./gameranker.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # recommended
+
+# Now initialize the extensions:
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+migrate = Migrate(app, db)
+
+# Import models and possibly routes (after initializing the app and db to avoid circular imports):
 from models import User, Game, Rating, Favorite
 
-
-# Add your model imports
-
-
-# Views go here!
 
 @app.route('/')
 def index():
@@ -47,8 +57,8 @@ def login():
 
     if user and user.check_password(password):
         # User is authenticated
-        # This is where you can generate and return a JWT token or set a session, etc.
-        return jsonify({"message": "Login successful!"}), 200
+        access_token = create_access_token(identity=username)
+        return jsonify({"message": "Login successful!", "access_token": access_token}), 200
     else:
         return jsonify({"message": "Invalid credentials!"}), 401
 
@@ -56,4 +66,3 @@ def login():
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
-#testing my branch
