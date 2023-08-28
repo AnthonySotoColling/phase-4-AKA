@@ -1,18 +1,15 @@
+# models.py
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
-
 from config import db, bcrypt
 
 # Models go here!
-
-
-class User(db.Model):
+class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-
-    username = db.Column(db.String)
-    _password = db.Column("password", db.String)  # Renamed to _password
+    username = db.Column(db.String, unique=True)
+    _password = db.Column(db.String)
 
     def set_password(self, password):
         """Hash the provided password and store it."""
@@ -32,8 +29,6 @@ class User(db.Model):
         """Hash the provided password and store it."""
         self.set_password(password)
 
-    username = db.Column(db.String, unique=True)
-    _password = db.Column(db.String)
 
     def __repr__(self):
         return f"<Username:{self.username}, Password:{self._password}"
