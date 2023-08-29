@@ -4,24 +4,23 @@
 
 # Remote library imports
 from flask import Flask, request, jsonify
-from flask_restful import Resource
-from flask_sqlalchemy import SQLAlchemy  
-from flask_bcrypt import Bcrypt          
-from flask_jwt_extended import create_access_token
+from extensions import db, bcrypt
+from flask_jwt_extended import create_access_token, JWTManager
 from flask_migrate import Migrate
 
-# Create the Flask app and set the configuration:
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///./gameranker.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # recommended
 
-# Now initialize the extensions:
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
+
+app = Flask(__name__)
+app.config.from_object('config')
+
+db.init_app(app)
+bcrypt.init_app(app)
+jwt = JWTManager(app)
 migrate = Migrate(app, db)
 
-# Import models and possibly routes (after initializing the app and db to avoid circular imports):
 from models import User, Game, Rating, Favorite
+
+
 
 
 @app.route('/')
