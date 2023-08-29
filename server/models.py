@@ -2,9 +2,11 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 from extensions import db, bcrypt
-
+from sqlalchemy.orm import validates
 
 # Models go here!
+
+
 class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
@@ -14,7 +16,8 @@ class User(db.Model, SerializerMixin):
 
     def set_password(self, password):
         """Hash the provided password and store it."""
-        self._password = bcrypt.generate_password_hash(password).decode('utf-8')
+        self._password = bcrypt.generate_password_hash(
+            password).decode('utf-8')
 
     def check_password(self, password):
         """Check if the provided password matches the stored hashed password."""
@@ -30,6 +33,13 @@ class User(db.Model, SerializerMixin):
         """Hash the provided password and store it."""
         self.set_password(password)
 
+    # makes sure username is unique
+    @validates('username')
+    def validate_username(self, key, username):
+        existing_user = User.query.filter(User.username == username).first()
+        if existing_user is not None:
+            raise ValueError("Username has been taken")
+        return username
 
     def __repr__(self):
         return f"<Username:{self.username}, Password:{self._password}"
@@ -46,7 +56,6 @@ class Game(db.Model):
         return f"<Game Name:{self.name}, Genre:{self.genre}, Image:{self.image}"
 
 
-
 class Rating(db.Model):
     __tablename__ = "ratings"
 
@@ -55,6 +64,13 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     game_id = db.Column(db.Integer, db.ForeignKey("games.id"))
 
+    # makes sure rating is 1-5
+    @validates
+    def validates_rating(self, key, rating):
+        if rating is 0 > (rating) > 5:
+            raise ValueError("rating must be between 1-5")
+        return rating
+
     @staticmethod
     def average_rating_for_game(game_id):
         ratings = Rating.query.filter_by(game_id=game_id).all()
@@ -62,10 +78,9 @@ class Rating(db.Model):
             total_rating = sum([r.rating for r in ratings])
             return total_rating / len(ratings)
         return None
-    
+
     def __repr__(self):
         return f"Rating:{self.rating}"
-
 
 
 class Favorite(db.Model):
