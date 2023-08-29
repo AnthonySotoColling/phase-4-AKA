@@ -3,7 +3,7 @@
 # Standard library imports
 
 # Remote library imports
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from extensions import db, bcrypt
 from flask_jwt_extended import create_access_token, JWTManager
 from flask_migrate import Migrate
@@ -21,13 +21,45 @@ migrate = Migrate(app, db)
 from models import User, Game, Rating, Favorite
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        data = request.get_json()
+        
+        if not data:
+            # Assume HTML form submission and get form data
+            username = request.form['username']
+            password = request.form['password']
+        else:
+            # API json submission
+            username = data['username']
+            password = data['password']
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.check_password(password):
+            # User is authenticated
+            access_token = create_access_token(identity=username)
+            if data:
+                return jsonify({"message": "Login successful!", "access_token": access_token}), 200
+            else:
+                # Redirect or show some HTML page when user logs in from the form.
+                pass  # Implement this part as per your needs
+        else:
+            if data:
+                return jsonify({"message": "Invalid credentials!"}), 401
+            else:
+                # Show the error on the HTML page when user logs in from the form.
+                pass  # Implement this part as per your needs
+
+    return render_template('login.html')
 
 
 @app.route('/')
 def index():
     return '<h1>Phase 4 Project Server</h1>'
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     username = data['username']
@@ -38,8 +70,7 @@ def register():
     if existing_user:
         return jsonify({"message": "User already exists!"}), 400
 
-    new_user = User(username=username)
-    new_user.password = password
+    new_user = User(username=username, password=password)
 
     db.session.add(new_user)
     db.session.commit()
