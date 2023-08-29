@@ -1,7 +1,8 @@
 # models.py
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
-from config import db, bcrypt
+from extensions import db, bcrypt
+
 
 # Models go here!
 class User(db.Model, SerializerMixin):
@@ -39,7 +40,6 @@ class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     genre = db.Column(db.String)
-    picture = db.Column(db.String)
     image = db.Column(db.String)
 
     def __repr__(self):
@@ -55,6 +55,14 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     game_id = db.Column(db.Integer, db.ForeignKey("games.id"))
 
+    @staticmethod
+    def average_rating_for_game(game_id):
+        ratings = Rating.query.filter_by(game_id=game_id).all()
+        if ratings:
+            total_rating = sum([r.rating for r in ratings])
+            return total_rating / len(ratings)
+        return None
+    
     def __repr__(self):
         return f"Rating:{self.rating}"
 
