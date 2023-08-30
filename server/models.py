@@ -45,18 +45,28 @@ class User(db.Model, SerializerMixin):
         return f"<Username:{self.username}, Password:{self._password}"
 
 
-class Game(db.Model):
+class Game(db.Model, SerializerMixin):
     __tablename__ = "games"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     genre = db.Column(db.String)
     image = db.Column(db.String)
 
+    @property
+    def average_rating(self):
+        ratings = Rating.query.filter_by(game_id=self.id).all()
+        if ratings:
+            total_rating = sum([r.rating for r in ratings])
+            return total_rating / len(ratings)
+        return None
+
+    serialize_only = ('id', 'name', 'genre', 'image', 'average_rating')
+
     def __repr__(self):
         return f"<Game Name:{self.name}, Genre:{self.genre}, Image:{self.image}"
 
 
-class Rating(db.Model):
+class Rating(db.Model, SerializerMixin):
     __tablename__ = "ratings"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -64,7 +74,8 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     game_id = db.Column(db.Integer, db.ForeignKey("games.id"))
 
-    # makes sure rating is 1-5
+    serialize_only = ('id', 'rating', 'user_id', 'game_id')
+
     @validates
     def validates_rating(self, key, rating):
         if not (0 <= rating <= 5):

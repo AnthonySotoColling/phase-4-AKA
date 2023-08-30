@@ -55,7 +55,11 @@ def seed_data():
             Game(name="lost ark", genre="arpg, mmorpg", image="https://images.ctfassets.net/umhrp0op95v1/VvjFjkl41oG52Nf71hZbr/e39168a3549882dd41f8b23187aa576c/LA_Y2_KA_Share_1200x630.jpg"),
         ]
 
-        db.session.add_all(games)
+    for game_data in games:
+        game = Game.query.filter_by(name=game_data.name).first()
+        if not game:
+            db.session.add(game_data)
+
         db.session.commit()
         
 
