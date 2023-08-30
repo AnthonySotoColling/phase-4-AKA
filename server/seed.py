@@ -34,7 +34,7 @@ def seed_data():
         db.create_all()
         user1, user2, tony, admin = seed_users() 
 
-        games = [
+        game_data = [
             Game(name="Super Mario", genre="Platformer", image="mario.jpg"),
             Game(name="Legend of Zelda", genre="Adventure", image="zelda.jpg"),
             Game(name="skyrim", genre="rpg, singleplayer", image="https://cdn.cloudflare.steamstatic.com/steam/apps/489830/header.jpg?t=1650909796"),
@@ -54,20 +54,22 @@ def seed_data():
             Game(name="metal gear solid 3", genre="action, singleplayer", image="https://cdn.akamai.steamstatic.com/steam/apps/2131650/capsule_616x353.jpg?t=1688633867"),
             Game(name="lost ark", genre="arpg, mmorpg", image="https://images.ctfassets.net/umhrp0op95v1/VvjFjkl41oG52Nf71hZbr/e39168a3549882dd41f8b23187aa576c/LA_Y2_KA_Share_1200x630.jpg"),
         ]
+        added_games = []
 
-    for game_data in games:
-        game = Game.query.filter_by(name=game_data.name).first()
-        if not game:
-            db.session.add(game_data)
+        for g_data in game_data:
+            game = Game.query.filter_by(name=g_data.name).first()
+            if not game:
+                game = Game(name=g_data.name, genre=g_data.genre, image=g_data.image)
+                db.session.add(game)
+            added_games.append(game)
 
         db.session.commit()
-        
 
         ratings = [
-            Rating(rating=5, user_id=user1.id, game_id=games[0].id),
-            Rating(rating=4, user_id=user2.id, game_id=games[1].id),
-            Rating(rating=5, user_id=tony.id, game_id=games[2].id),
-            Rating(rating=3, user_id=admin.id, game_id=games[3].id)
+            Rating(rating=5, user_id=user1.id, game_id=added_games[0].id),
+            Rating(rating=4, user_id=user2.id, game_id=added_games[1].id),
+            Rating(rating=5, user_id=tony.id, game_id=added_games[2].id),
+            Rating(rating=3, user_id=admin.id, game_id=added_games[3].id)
         ]
 
         db.session.add_all(ratings)
