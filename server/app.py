@@ -79,6 +79,15 @@ def register():
 
     return jsonify({"message": "User registered successfully!"}), 201
 
+@app.route('/api/games', methods=['GET'])
+def get_games():
+    try:
+        games = Game.query.all()
+        return jsonify([game.to_dict() for game in games])
+    except Exception as e:
+        print(e)  
+        return jsonify({"error": "An error occurred while fetching games"}), 500
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
