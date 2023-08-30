@@ -96,44 +96,54 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          {/* If user is logged in, redirect them to home */}
-          {isLoggedIn ? <Route path="*" element={<Navigate to="/home" replace />} /> : null}
-  
+          {/* Specific Routes */}
           <Route path="/login" element={
-            <div>
-              <h1>Login</h1>
-              {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
-              <form onSubmit={handleSubmit}>
+            isLoggedIn ? 
+              <Navigate to="/home" replace /> :
+              (
                 <div>
-                  <label>Username: </label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
+                  <h1>Login</h1>
+                  {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
+                  <form onSubmit={handleSubmit}>
+                    <div>
+                      <label>Username: </label>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label>Password: </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                    <button type="submit">Login</button>
+                  </form>
+                  <button onClick={handleRegister}>Would you like to create an account?</button>
                 </div>
-                <div>
-                  <label>Password: </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <button type="submit">Login</button>
-                </form>
-            <button onClick={handleRegister}>Would you like to create an account?</button>
-          </div>
-        } />
-
-        <Route path="/home" element={<HomePage />} />
-
-        {/* If user is not logged in, direct them to login */}
-        {!isLoggedIn ? <Route path="*" element={<Navigate to="/login" replace />} /> : null}
-      </Routes>
-    </div>
-  </BrowserRouter>
-);
+              )
+          } />
+  
+          <Route path="/home" element={
+            isLoggedIn ? 
+              <HomePage /> : 
+              <Navigate to="/login" replace />
+          } />
+  
+          {/* Catch-all Route */}
+          <Route path="*" element={
+            isLoggedIn ? 
+              <Navigate to="/home" replace /> : 
+              <Navigate to="/login" replace />
+          } />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
 
 export default App;
