@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
+import HomePage from './homePage';
 
-function HomePage() {
+export const UserIdContext = createContext();
+
+function LocalHomePage() {
   const [games, setGames] = useState([]);
+  const { userId } = useContext(UserIdContext);
+  console.log("userId in LocalHomePage:", userId);
 
   useEffect(() => {
     async function fetchGames() {
@@ -18,6 +23,38 @@ function HomePage() {
     
     fetchGames();
   }, []);
+
+  function isFavorited(gameId) {
+    return false;
+}
+  
+async function toggleFavorite(game_id) {
+  if (!userId) {
+    console.error("User is not logged in or userId is missing.");
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5555/api/favorites', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId, game_id }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data.message);
+  } catch (error) {
+    console.error("Failed to toggle favorite:", error);
+  }
+}
+
+
   return (
     <div>
         <h1>Home Page</h1>
@@ -28,6 +65,7 @@ function HomePage() {
                     <th>Genre</th>
                     <th>Image</th>
                     <th>Rating</th>
+                    <th>Actions</th> 
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +77,14 @@ function HomePage() {
                         <td>
                             {game.average_rating ? game.average_rating.toFixed(1) : "No Ratings Yet"}
                         </td>
+                        <td>
+                            <button 
+                                onClick={() => toggleFavorite(game.id)} 
+                                style={isFavorited(game.id) ? { backgroundColor: 'yellow' } : {}}
+                            >
+                                {isFavorited(game.id) ? 'Unfavorite' : 'Favorite'}
+                            </button>
+                        </td>
                     </tr>
                 ))}
             </tbody>
@@ -47,29 +93,40 @@ function HomePage() {
 );
 }
 
+
 function App() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const initialUserId = localStorage.getItem("userId");
+  console.log("Initial userId from localStorage:", initialUserId);
+  const [userId, setUserId] = useState(initialUserId);
+  console.log("Initial userId:", userId);
 
-  const handleSubmit = async (e) => {
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-
-    const response = await fetch('http://localhost:5555/login', {
+  
+    const response = await fetch('http://localhost:5555/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ username, password }),
     });
-
+  
     const data = await response.json();
-
+  
     if (response.status === 200) {
+      console.log("Received userId from server:", data.user_id);
       setMessage(data.message);
       setIsLoggedIn(true);
-    } else {
+      localStorage.setItem("token", data.access_token);
+      setUserId(data.user_id);
+      localStorage.setItem("userId", data.user_id);  
+    }
+     else {
       setMessage(data.message);
     }
   };
@@ -93,57 +150,53 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <div className="App">
-        <Routes>
-          {/* Specific Routes */}
-          <Route path="/login" element={
-            isLoggedIn ? 
-              <Navigate to="/home" replace /> :
-              (
-                <div>
-                  <h1>Login</h1>
-                  {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
-                  <form onSubmit={handleSubmit}>
-                    <div>
-                      <label>Username: </label>
-                      <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <label>Password: </label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </div>
-                    <button type="submit">Login</button>
-                  </form>
-                  <button onClick={handleRegister}>Would you like to create an account?</button>
-                </div>
-              )
-          } />
-  
-          <Route path="/home" element={
-            isLoggedIn ? 
-              <HomePage /> : 
-              <Navigate to="/login" replace />
-          } />
-  
-          {/* Catch-all Route */}
-          <Route path="*" element={
-            isLoggedIn ? 
-              <Navigate to="/home" replace /> : 
-              <Navigate to="/login" replace />
-          } />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <UserIdContext.Provider value={{ userId, setUserId }}>
+      <BrowserRouter>
+        <div className="App">
+          <Routes>
+            <Route path="/login" element={
+              isLoggedIn ? 
+                <Navigate to="/home" replace /> :
+                (
+                  <div>
+                    <h1>Login</h1>
+                    {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
+                    <form onSubmit={handleLogin}> 
+                      <div>
+                        <label>Username: </label>
+                        <input
+                          type="text"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label>Password: </label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </div>
+                      <button type="submit">Login</button>
+                    </form>
+                    <button onClick={handleRegister}>Would you like to create an account?</button>
+                  </div>
+                )
+            } />
+    
+            <Route path="/home" element={
+              isLoggedIn ? 
+                <LocalHomePage /> : 
+                <Navigate to="/login" replace />
+            } />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </UserIdContext.Provider>
   );
 }
-
-export default App;
+  
+  export default App;
+  
+  
