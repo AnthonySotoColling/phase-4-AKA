@@ -15,11 +15,32 @@ function LoginForm() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle login logic here
-        console.log(formData);
+        try {
+            const response = await fetch('http://localhost:5555/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams(formData) // formData already contains the username and password
+            });
+    
+            const data = await response.json();
+    
+            if(response.status === 200) {
+                console.log("Login successful:", data);
+                // Handle successful login, maybe redirect to dashboard, store token, etc.
+            } else {
+                console.error("Error:", data.message);
+                // Handle login error, maybe show a message to the user
+            }
+        } catch (err) {
+            console.error("Failed to fetch:", err);
+            // Handle fetch error, maybe show a message to the user
+        }
     };
+    
 
     return (
         <div className="login-container">

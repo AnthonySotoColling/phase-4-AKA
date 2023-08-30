@@ -67,7 +67,7 @@ class Rating(db.Model):
     # makes sure rating is 1-5
     @validates
     def validates_rating(self, key, rating):
-        if rating is 0 > (rating) > 5:
+        if not (0 <= rating <= 5):
             raise ValueError("rating must be between 1-5")
         return rating
 

@@ -1,10 +1,13 @@
+// src/App.js
+
 import React from 'react';
-import LoginForm from './LoginForm';
+import './App.css';
+import Login from './Login';
 
 function App() {
     return (
-        <div>
-            <LoginForm />
+        <div className="App">
+            <Login />
         </div>
     );
 }
