@@ -135,6 +135,9 @@ def add_rating():
         print(e)
         return jsonify({"error": "An error occurred while saving the rating"}), 500
 
+# @app.route('/leaderboard')
+# def leaderboard():
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
