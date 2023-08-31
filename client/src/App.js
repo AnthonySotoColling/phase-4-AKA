@@ -1,7 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
-import HomePage from './homePage';
 import BasicRating from './BasicRating';
 
 export const UserIdContext = createContext();

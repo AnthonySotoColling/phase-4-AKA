@@ -3,7 +3,7 @@
 # Standard library imports
 
 # Remote library imports
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify
 from extensions import db, bcrypt
 from flask_jwt_extended import create_access_token, JWTManager
 from flask_migrate import Migrate
