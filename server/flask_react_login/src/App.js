@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
 import HomePage from './homePage';
+import BasicRating from './BasicRating';
 
 export const UserIdContext = createContext();
 
@@ -26,9 +27,9 @@ function LocalHomePage() {
 
   function isFavorited(gameId) {
     return false;
-}
+  }
   
-async function toggleFavorite(game_id) {
+  async function toggleFavorite(game_id) {
   if (!userId) {
     console.error("User is not logged in or userId is missing.");
     return;
@@ -55,41 +56,45 @@ async function toggleFavorite(game_id) {
 }
 
 
-  return (
-    <div>
-        <h1>Home Page</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Game Name</th>
-                    <th>Genre</th>
-                    <th>Image</th>
-                    <th>Rating</th>
-                    <th>Actions</th> 
-                </tr>
-            </thead>
-            <tbody>
-                {games.map(game => (
-                    <tr key={game.id}>
-                        <td>{game.name}</td>
-                        <td>{game.genre}</td>
-                        <td><img src={game.image} alt={game.name} width="100" /></td>
-                        <td>
-                            {game.average_rating ? game.average_rating.toFixed(1) : "No Ratings Yet"}
-                        </td>
-                        <td>
-                            <button 
-                                onClick={() => toggleFavorite(game.id)} 
-                                style={isFavorited(game.id) ? { backgroundColor: 'yellow' } : {}}
-                            >
-                                {isFavorited(game.id) ? 'Unfavorite' : 'Favorite'}
-                            </button>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
+return (
+  <div>
+    <h1>Your Games</h1> 
+    <table>
+      <thead>
+        <tr>
+          <th>Game Name</th>
+          <th>Genre</th>
+          <th>Image</th>
+          <th>Rating</th>
+          <th>Your Rating</th> {/* New Column for User's Rating */}
+          <th>Actions</th> 
+        </tr>
+      </thead>
+      <tbody>
+        {games.map(game => (
+          <tr key={game.id}>
+            <td>{game.name}</td>
+            <td>{game.genre}</td>
+            <td><img src={game.image} alt={game.name} width="100" /></td>
+            <td>
+              {game.average_rating ? game.average_rating.toFixed(1) : "No Ratings Yet"}
+            </td>
+            <td>
+              {userId && <BasicRating userId={userId} gameId={game.id} />} {/* Rating Component */}
+            </td>
+            <td>
+              <button 
+                onClick={() => toggleFavorite(game.id)} 
+                style={isFavorited(game.id) ? { backgroundColor: 'yellow' } : {}}
+              >
+                {isFavorited(game.id) ? 'Unfavorite' : 'Favorite'}
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
 );
 }
 

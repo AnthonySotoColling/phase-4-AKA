@@ -41,7 +41,7 @@ const HomePage = () => {
                 ))}
             </ul>
         </div>
-    );
+    ); 
 };
 
 export default HomePage;
