@@ -4,7 +4,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import User, Game, Rating, Favorite, db
-from app import app
+from server.flask_react_login.app import app
 from extensions import db, bcrypt
 
 

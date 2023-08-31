@@ -13,48 +13,46 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.config.from_object('config')
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000", "methods": ["GET", "POST", "PUT", "DELETE"]}})
+
 
 db.init_app(app)
 bcrypt.init_app(app)
 jwt = JWTManager(app)
 migrate = Migrate(app, db)
-CORS(app)
+
+
 
 from models import User, Game, Rating, Favorite
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    if request.method == 'POST':
-        data = request.get_json()
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"message": "Missing data!"}), 400
+
+    username = data.get('username')
+    password = data.get('password')
+
+    if not username or not password:
+        return jsonify({"message": "Missing username or password!"}), 400
+
+    user = User.query.filter_by(username=username).first()
+
+    if user and user.check_password(password):
+        access_token = create_access_token(identity=username)
         
-        if not data:
-            # Assume HTML form submission and get form data
-            username = request.form['username']
-            password = request.form['password']
-        else:
-            # API json submission
-            username = data['username']
-            password = data['password']
+        
+        return jsonify({
+            "message": "Login successful!",
+            "access_token": access_token,
+            "user_id": user.id   
+        }), 200
+    else:
+        return jsonify({"message": "Invalid credentials!"}), 401
 
-        user = User.query.filter_by(username=username).first()
-
-        if user and user.check_password(password):
-            # User is authenticated
-            access_token = create_access_token(identity=username)
-            if data:
-                return jsonify({"message": "Login successful!", "access_token": access_token}), 200
-            else:
-                # Redirect to the index route when user logs in from the form.
-                return redirect(url_for('index'))
-        else:
-            if data:
-                return jsonify({"message": "Invalid credentials!"}), 401
-            else:
-                # Show the error on the HTML login page.
-                return render_template('login.html', error="Invalid credentials!")
-
-    return render_template('login.html')
 
 
 @app.route('/')
@@ -87,6 +85,26 @@ def get_games():
     except Exception as e:
         print(e)  
         return jsonify({"error": "An error occurred while fetching games"}), 500
+    
+
+@app.route('/api/favorites', methods=['POST'])
+def add_favorite():
+    data = request.get_json()
+
+    user_id = data['user_id']  
+    game_id = data['game_id']
+
+    favorite = Favorite.query.filter_by(user_id=user_id, game_id=game_id).first()
+
+    if favorite:  
+        db.session.delete(favorite)
+        db.session.commit()
+        return jsonify({"message": "Removed from favorites!"}), 200
+    else:  
+        new_favorite = Favorite(user_id=user_id, game_id=game_id)
+        db.session.add(new_favorite)
+        db.session.commit()
+        return jsonify({"message": "Added to favorites!"}), 201
 
 
 if __name__ == '__main__':
