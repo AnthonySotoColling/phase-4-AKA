@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 export default function BasicRating({ userId, gameId }) {
   const [rating, setRating] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleRatingChange = (event) => {
     setRating(event.target.value);
@@ -9,7 +10,7 @@ export default function BasicRating({ userId, gameId }) {
 
   const handleSubmit = () => {
     if (rating > 0) {
-      fetch('/api/ratings', {
+      fetch('http://localhost:5555/api/ratings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -17,12 +18,18 @@ export default function BasicRating({ userId, gameId }) {
         body: JSON.stringify({
           user_id: userId,
           game_id: gameId,
-          rating: rating,
+          rating: parseInt(rating, 10) // to change the string into an integer
         }),
       })
-        .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
         .then((data) => {
           console.log(data.message);
+          setSubmitted(true);
         })
         .catch((error) => {
           console.error('Error saving rating:', error);
@@ -41,7 +48,9 @@ export default function BasicRating({ userId, gameId }) {
         <option value={4}>4</option>
         <option value={5}>5</option>
       </select>
-      <button onClick={handleSubmit}>Submit Rating</button>
+      <button onClick={handleSubmit} disabled={rating === 0 || submitted}>
+        {submitted ? "Submitted!" : "Submit Rating"}
+      </button>
     </div>
   );
 }

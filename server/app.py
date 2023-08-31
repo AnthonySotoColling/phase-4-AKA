@@ -105,6 +105,35 @@ def add_favorite():
         db.session.add(new_favorite)
         db.session.commit()
         return jsonify({"message": "Added to favorites!"}), 201
+    
+@app.route('/api/ratings', methods=['POST'])
+def add_rating():
+    data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing data!"}), 400
+
+    user_id = data.get('user_id')
+    game_id = data.get('game_id')
+    rating_value = data.get('rating')
+
+    if not all([user_id, game_id, rating_value]):
+        return jsonify({"message": "Missing user_id, game_id or rating!"}), 400
+
+    existing_rating = Rating.query.filter_by(user_id=user_id, game_id=game_id).first()
+
+    if existing_rating:
+        existing_rating.rating = rating_value
+        message = "Rating updated!"
+    else:
+        new_rating = Rating(user_id=user_id, game_id=game_id, rating=rating_value)
+        db.session.add(new_rating)
+        message = "Rating added!"
+    try:
+        db.session.commit()
+        return jsonify({"message": message}), 201
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "An error occurred while saving the rating"}), 500
 
 
 if __name__ == '__main__':
