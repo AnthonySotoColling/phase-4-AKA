@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
 import BasicRating from './BasicRating';
+import Leaderboard from './Leaderboard';
 
 export const UserIdContext = createContext();
 
@@ -193,6 +194,9 @@ function App() {
               isLoggedIn ? 
                 <LocalHomePage /> : 
                 <Navigate to="/login" replace />
+            } />
+            <Route path="/leaderboard" element={
+              <Leaderboard />
             } />
           </Routes>
         </div>
