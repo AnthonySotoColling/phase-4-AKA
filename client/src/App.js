@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
 import BasicRating from './BasicRating';
+import Leaderboard from './Leaderboard';
 import FavoritedGames from './FavoriteGamesPage';
 
 
@@ -154,7 +155,6 @@ function App() {
       setMessage(data.message);
     }
   };
-
   
 return (
   <UserIdContext.Provider value={{ userId, setUserId }}>
@@ -201,6 +201,9 @@ return (
             isLoggedIn ? 
               <FavoritedGames /> : 
               <Navigate to="/login" replace />
+          } />
+          <Route path="/leaderboard" element={
+              <Leaderboard />
           } />
         </Routes>
       </div>

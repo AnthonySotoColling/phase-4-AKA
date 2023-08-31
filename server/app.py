@@ -170,6 +170,37 @@ def remove_favorite(user_id, game_id):
 
 
 
+@app.route('/api/leaderboard', methods=['GET'])
+def leaderboard():
+    try:
+        # Join games with ratings, group by games, and compute average rating
+        leaderboard_data = db.session.query(
+            Game.id, Game.name, Game.genre, Game.image,
+            db.func.avg(Rating.rating).label('average_rating')
+        ).join(
+            Rating, Game.id == Rating.game_id, isouter=True
+        ).group_by(
+            Game.id
+        ).order_by(
+            db.desc(db.func.avg(Rating.rating)), Game.name
+        ).all()
+
+        # Convert the result to a list of dictionaries
+        leaderboard_games = [
+            {
+                "id": game.id,
+                "name": game.name,
+                "genre": game.genre,
+                "image": game.image,
+                "average_rating": float(game.average_rating or 0)
+            }
+            for game in leaderboard_data
+        ]
+
+        return jsonify(leaderboard_games), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "An error occurred while fetching the leaderboard"}), 500
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
