@@ -66,7 +66,7 @@ return (
           <th>Genre</th>
           <th>Image</th>
           <th>Rating</th>
-          <th>Your Rating</th> {/* New Column for User's Rating */}
+          <th>Your Rating</th> 
           <th>Actions</th> 
         </tr>
       </thead>
@@ -80,7 +80,7 @@ return (
               {game.average_rating ? game.average_rating.toFixed(1) : "No Ratings Yet"}
             </td>
             <td>
-              {userId && <BasicRating userId={userId} gameId={game.id} />} {/* Rating Component */}
+              {userId && <BasicRating userId={userId} gameId={game.id} />} 
             </td>
             <td>
               <button 
