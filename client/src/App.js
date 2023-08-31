@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import './App.css';
 import BasicRating from './BasicRating';
 import Leaderboard from './Leaderboard';
+import FavoritedGames from './FavoriteGamesPage';
+
 
 export const UserIdContext = createContext();
 
@@ -153,58 +155,63 @@ function App() {
       setMessage(data.message);
     }
   };
-
-  return (
-    <UserIdContext.Provider value={{ userId, setUserId }}>
-      <BrowserRouter>
-        <div className="App">
-          <Routes>
-            <Route path="/login" element={
-              isLoggedIn ? 
-                <Navigate to="/home" replace /> :
-                (
-                  <div>
-                    <h1>Login</h1>
-                    {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
-                    <form onSubmit={handleLogin}> 
-                      <div>
-                        <label>Username: </label>
-                        <input
-                          type="text"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <label>Password: </label>
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                      </div>
-                      <button type="submit">Login</button>
-                    </form>
-                    <button onClick={handleRegister}>Would you like to create an account?</button>
-                  </div>
-                )
-            } />
-    
-            <Route path="/home" element={
-              isLoggedIn ? 
-                <LocalHomePage /> : 
-                <Navigate to="/login" replace />
-            } />
-            <Route path="/leaderboard" element={
+  
+return (
+  <UserIdContext.Provider value={{ userId, setUserId }}>
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/login" element={
+            isLoggedIn ? 
+              <Navigate to="/home" replace /> :
+              (
+                <div>
+                  <h1>Login</h1>
+                  {message && <p style={{color: message === "Invalid credentials!" ? 'red' : 'green'}}>{message}</p>}
+                  <form onSubmit={handleLogin}> 
+                    <div>
+                      <label>Username: </label>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label>Password: </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                    <button type="submit">Login</button>
+                  </form>
+                  <button onClick={handleRegister}>Would you like to create an account?</button>
+                </div>
+              )
+          } />
+  
+          <Route path="/home" element={
+            isLoggedIn ? 
+              <LocalHomePage /> : 
+              <Navigate to="/login" replace />
+          } />
+          <Route path="/favorites" element={
+            isLoggedIn ? 
+              <FavoritedGames /> : 
+              <Navigate to="/login" replace />
+          } />
+          <Route path="/leaderboard" element={
               <Leaderboard />
-            } />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </UserIdContext.Provider>
-  );
+          } />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  </UserIdContext.Provider>
+);
 }
   
-  export default App;
+export default App;
   
   

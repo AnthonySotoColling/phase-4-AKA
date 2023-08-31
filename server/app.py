@@ -134,6 +134,41 @@ def add_rating():
     except Exception as e:
         print(e)
         return jsonify({"error": "An error occurred while saving the rating"}), 500
+    
+@app.route('/api/favorites/<int:user_id>', methods=['GET'])
+def get_user_favorites(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        favorite_games = db.session.query(Game).join(Favorite, Game.id == Favorite.game_id).filter(Favorite.user_id == user_id).all()
+
+        serialized_favorite_games = [game.to_dict() for game in favorite_games]
+
+        return jsonify(serialized_favorite_games), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "An error occurred while fetching favorites"}), 500
+    
+@app.route('/api/favorites/<int:user_id>/<int:game_id>', methods=['DELETE'])
+def remove_favorite(user_id, game_id):
+    try:
+        favorite = Favorite.query.filter_by(user_id=user_id, game_id=game_id).first()
+
+        if not favorite:
+            return jsonify({"error": "Favorite not found"}), 404
+
+        db.session.delete(favorite)
+        db.session.commit()
+
+        return jsonify({"message": "Favorite removed successfully"}), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "An error occurred while removing the favorite"}), 500
+
+
 
 @app.route('/api/leaderboard', methods=['GET'])
 def leaderboard():
